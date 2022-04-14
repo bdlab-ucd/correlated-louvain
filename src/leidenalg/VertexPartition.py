@@ -381,6 +381,117 @@ class MutableVertexPartition(_ig.VertexClustering):
     """
     return _c_leiden._MutableVertexPartition_weight_from_comm(self._partition, v, comm)
 
+class HybridVertexParition(MutableVertexPartition):
+  """ Implements modularity. This quality function is well-defined only for positive edge weights.
+
+  Notes
+  -----
+  The quality function is
+
+  .. math:: Q = \\frac{1}{2m} \\sum_{ij} \\left(A_{ij} - \\frac{k_i k_j}{2m} \\right)\\delta(\\sigma_i, \\sigma_j)
+
+  where :math:`A` is the adjacency matrix, :math:`k_i` is the (weighted) degree
+  of node :math:`i`, :math:`m` is the total number of edges (or total edge
+  weight), :math:`\\sigma_i` denotes the community of node :math:`i` and
+  :math:`\\delta(\\sigma_i, \\sigma_j) = 1` if :math:`\\sigma_i = \\sigma_j`
+  and `0` otherwise.
+
+  This can alternatively be formulated as a sum over communities:
+
+  .. math:: Q = \\frac{1}{2m} \\sum_{c} \\left(m_c - \\frac{K_c^2}{4m} \\right)
+
+  where :math:`m_c` is the number of internal edges (or total internal edge
+  weight) of community :math:`c` and :math:`K_c = \\sum_{i \\mid \\sigma_i = c}
+  k_i` is the total (weighted) degree of nodes in community :math:`c`.
+
+  Note that for directed graphs a slightly different formulation is used, as
+  proposed by Leicht and Newman [2]:
+
+  .. math:: Q = \\frac{1}{m} \\sum_{ij} \\left(A_{ij} - \\frac{k_i^\mathrm{out} k_j^\mathrm{in}}{m} \\right)\\delta(\\sigma_i, \\sigma_j),
+
+  where :math:`k_i^\\mathrm{out}` and :math:`k_i^\\mathrm{in}` refers to
+  respectively the outdegree and indegree of node :math:`i`, and :math:`A_{ij}`
+  refers to an edge from :math:`i` to :math:`j`.
+
+  References
+  ----------
+  .. [1] Newman, M. E. J., & Girvan, M. (2004). Finding and evaluating
+         community structure in networks.  Physical Review E, 69(2), 026113.
+         `10.1103/PhysRevE.69.026113 <http://doi.org/10.1103/PhysRevE.69.026113>`_
+
+  .. [2] Leicht, E. A., & Newman, M. E. J. (2008). Community Structure
+         in Directed Networks. Physical Review Letters, 100(11), 118703.
+         `10.1103/PhysRevLett.100.118703 <https://doi.org/10.1103/PhysRevLett.100.118703>`_
+   """
+  def __init__(self, graph, initial_membership=None, weights=None, node_sizes=None, **kwargs):
+    """
+    Parameters
+    ----------
+    graph : :class:`ig.Graph`
+      Graph to define the partition on.
+
+    initial_membership : list of int
+      Initial membership for the partition. If :obj:`None` then defaults to a
+      singleton partition.
+
+    weights : list of double, or edge attribute
+      Weights of edges. Can be either an iterable or an edge attribute.
+
+    node_sizes : list of int, or vertex attribute
+      Sizes of nodes are necessary to know the size of communities in aggregate
+      graphs. Usually this is set to 1 for all nodes, but in specific cases
+      this could be changed.
+    """
+    if initial_membership is not None:
+      initial_membership = list(initial_membership)
+
+    super(HybridVertexParition, self).__init__(graph, initial_membership)
+    pygraph_t = _get_py_capsule(graph)
+
+    if weights is not None:
+      if isinstance(weights, str):
+        weights = graph.es[weights]
+      else:
+        # Make sure it is a list
+        weights = list(weights)
+
+    if node_sizes is not None:
+      if isinstance(node_sizes, str):
+        node_sizes = graph.vs[node_sizes]
+      else:
+        # Make sure it is a list
+        node_sizes = list(node_sizes)
+
+    if 'dataset' in kwargs and 'target' in kwargs:
+      if 'k1' in kwargs and 'k2' in kwargs:
+        k1 = kwargs.get('k1')
+        k2 = kwargs.get('k2')
+      else:
+        k1 = 0.1
+        k2 = 0.9
+      if 'k3' in kwargs and 'k4' in kwargs:
+        k3 = kwargs.get('k3')
+        k4 = kwargs.get('k4')
+      else:
+        k3 = 0.5
+        k4 = 0.5
+
+      self._partition = _c_leiden._new_HybridVertexPartition(pygraph_t,
+                                                             initial_membership, weights, node_sizes,
+                                                             kwargs.get('dataset'), graph.vs['name'],
+                                                             kwargs.get('target'),
+                                                             k1, k2, k3, k4)
+
+    else:
+      self._partition = _c_leiden._new_HybridVertexPartition(pygraph_t,
+                                                               initial_membership, weights, node_sizes)
+    self._update_internal_membership()
+
+  def __deepcopy__(self, memo):
+    n, directed, edges, weights, node_sizes = _c_leiden._HybridVertexPartition_get_py_igraph(self._partition)
+    new_partition = HybridVertexParition(self.graph, self.membership, weights, node_sizes)
+    return new_partition
+
 class ModularityVertexPartition(MutableVertexPartition):
   """ Implements modularity. This quality function is well-defined only for positive edge weights.
 

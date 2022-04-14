@@ -748,12 +748,12 @@ buildcfg.process_args_from_command_line()
 
 # Define the extension
 leiden_ext = Extension('leidenalg._c_leiden',
-                    sources = glob.glob(os.path.join('src', 'leidenalg', '*.cpp')),
-                    include_dirs=['include']);
+                    sources = glob.glob(os.path.join('src', 'leidenalg', '*.cpp')) + glob.glob(os.path.join('vendor', 'source', 'alglib', 'src', '*.cpp')),
+                    include_dirs=['include', 'vendor/source/alglib/src']);
 
 options =  dict(
   name = 'leidenalg',
-  description = 'Leiden is a general algorithm for methods of community detection in large networks.',
+  description = 'Leiden is a general algorithm for methods of community detection in large networks. MODIFIED VERSION',
   long_description=
     """
  Leiden is a general algorithm for methods of community detection in large networks.

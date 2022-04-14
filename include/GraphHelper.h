@@ -166,6 +166,10 @@ class Graph
         throw Exception("Incorrect mode specified.");
     };
 
+    inline void set_features(std::vector< std::vector<int> > names) { _names = names; };
+    inline std::vector<int> get_features(size_t node) { return _names[node]; };
+    inline std::vector< std::vector<int> > get_features() { return _names; };
+
   protected:
 
     int _remove_graph;
@@ -203,6 +207,8 @@ class Graph
 
     int _correct_self_loops;
     double _density;
+
+    std::vector< std::vector<int> > _names;
 
     void init_admin();
     void set_defaults();

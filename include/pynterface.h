@@ -23,7 +23,7 @@ extern "C"
   PyObject* _set_rng_seed(PyObject *self, PyObject *args, PyObject *keywds);
 
   static PyMethodDef leiden_funcs[] = {
-
+      {"_new_HybridVertexPartition",                                (PyCFunction)_new_HybridVertexPartition,                                METH_VARARGS | METH_KEYWORDS, ""},
       {"_new_ModularityVertexPartition",                            (PyCFunction)_new_ModularityVertexPartition,                            METH_VARARGS | METH_KEYWORDS, ""},
       {"_new_SignificanceVertexPartition",                          (PyCFunction)_new_SignificanceVertexPartition,                          METH_VARARGS | METH_KEYWORDS, ""},
       {"_new_SurpriseVertexPartition",                              (PyCFunction)_new_SurpriseVertexPartition,                              METH_VARARGS | METH_KEYWORDS, ""},

@@ -4,6 +4,7 @@
 #include <Python.h>
 #include <igraph.h>
 #include "GraphHelper.h"
+#include "HybridVertexPartition.h"
 #include "ModularityVertexPartition.h"
 #include "SignificanceVertexPartition.h"
 #include "SurpriseVertexPartition.h"
@@ -26,6 +27,7 @@ MutableVertexPartition* create_partition_from_py(PyObject* py_obj_graph, char* m
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes);
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights);
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, int check_positive_weight);
+//Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, PyObject* py_dataset, PyObject* py_names);
 
 vector<size_t> create_size_t_vector(PyObject* py_list);
 
@@ -38,6 +40,7 @@ void del_MutableVertexPartition(PyObject *self);
 extern "C"
 {
 #endif
+  PyObject* _new_HybridVertexPartition(PyObject *self, PyObject *args, PyObject *keywds);
   PyObject* _new_ModularityVertexPartition(PyObject *self, PyObject *args, PyObject *keywds);
   PyObject* _new_SignificanceVertexPartition(PyObject *self, PyObject *args, PyObject *keywds);
   PyObject* _new_SurpriseVertexPartition(PyObject *self, PyObject *args, PyObject *keywds);

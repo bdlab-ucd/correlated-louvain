@@ -123,6 +123,11 @@ Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyO
 
   return graph;
 }
+//
+//Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, PyObject* py_dataset, PyObject* py_names) {
+//    Graph* graph create_graph_from_py(py_obj_graph, py_node_sizes, py_weights, check_positive_weight);
+//
+//}
 
 vector<size_t> create_size_t_vector(PyObject* py_list)
 {
@@ -167,6 +172,161 @@ void del_MutableVertexPartition(PyObject* py_partition)
 extern "C"
 {
 #endif
+
+PyObject* _new_HybridVertexPartition(PyObject *self, PyObject *args, PyObject *keywds)
+{
+    PyObject* py_obj_graph = NULL;
+    PyObject* py_initial_membership = NULL;
+    PyObject* py_weights = NULL;
+    PyObject* py_node_sizes = NULL;
+    PyObject* py_dataset = NULL;
+    PyObject* py_names = NULL;
+    PyObject* py_target = NULL;
+    PyObject* py_k1 = NULL;
+    PyObject* py_k2 = NULL;
+    PyObject* py_k3 = NULL;
+    PyObject* py_k4 = NULL;
+
+    static const char* kwlist[] = {"graph", "initial_membership", "weights", "node_sizes", "dataset", "names", "target", "k1", "k2", "k3", "k4", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "O|OOOOOOOOOO", (char**) kwlist,
+                                     &py_obj_graph, &py_initial_membership, &py_weights, &py_node_sizes,
+                                     &py_dataset, &py_names, &py_target, &py_k1, &py_k2, &py_k3, &py_k4))
+        return NULL;
+
+    try
+    {
+
+        Graph* graph = create_graph_from_py(py_obj_graph, py_node_sizes, py_weights);
+
+        HybridVertexPartition* partition = NULL;
+
+        // If necessary create an initial partition
+        if (py_initial_membership != NULL && py_initial_membership != Py_None)
+        {
+            vector<size_t> initial_membership = create_size_t_vector(py_initial_membership);
+            partition = new HybridVertexPartition(graph, initial_membership);
+        }
+        else {
+            if (py_dataset != NULL && py_dataset != Py_None &&
+                py_target != NULL && py_target != Py_None &&
+                py_names != NULL && py_names != Py_None) {
+                std::vector< std::vector<double> >dataset;
+                std::vector<double> target;
+                std::vector< std::vector<int> > names;
+                // getting dataset
+                for (int i=0; i < PyList_Size(py_dataset); i++) {
+                    PyObject* py_inner_list = PyList_GetItem(py_dataset, i);
+                    std::vector<double> inner_list;
+                    if (!PyList_Check(py_dataset)) {
+                        PyErr_SetString(PyExc_TypeError, "Dataset passed in doesn't match expected format. Must be list of list of doubles.");
+                        return NULL;
+                    }
+                    for (int j=0; j < PyList_Size(py_inner_list); j++) {
+                        PyObject* py_data_point = PyList_GetItem(py_inner_list, j);
+                        double val;
+                        if (PyLong_Check(py_data_point)) {
+                            val = (double) PyLong_AsLong(py_data_point);
+                        } else if (PyFloat_Check(py_data_point)) {
+                            val = PyFloat_AsDouble(py_data_point);
+                        } else {
+                            PyErr_SetString(PyExc_TypeError, "Must pass in list of list of number for dataset.");
+                            return NULL;
+                        }
+                        inner_list.push_back(val);
+                    }
+                    dataset.push_back(inner_list);
+                }
+
+                // getting target
+                for (int i=0; i < PyList_Size(py_target); i++) {
+                    PyObject* py_data_point = PyList_GetItem(py_target, i);
+                    double val;
+                    if (PyLong_Check(py_data_point)) {
+                        val = (double) PyLong_AsLong(py_data_point);
+                    } else if (PyFloat_Check(py_data_point)) {
+                        val = PyFloat_AsDouble(py_data_point);
+                    } else {
+                        PyErr_SetString(PyExc_TypeError, "Must pass in list of list of number for target.");
+                        return NULL;
+                    }
+                    target.push_back(val);
+                }
+
+                // getting names
+                for (int i=0; i < PyList_Size(py_names); i++) {
+                    PyObject* py_data_point = PyList_GetItem(py_names, i);
+                    std::vector<int> data_point_list;
+                    int data_point;
+                    if (PyLong_Check(py_data_point)) {
+                        data_point = (int) PyLong_AsLong(py_data_point);
+                        data_point_list.push_back(data_point);
+                    } else {
+                        PyErr_SetString(PyExc_TypeError, "Must pass in list of ints for names.");
+                    }
+                    names.push_back(data_point_list);
+                }
+
+                // getting weights
+                double k1, k2, k3, k4;
+                if (PyLong_Check(py_k1)) {
+                    k1 = (double) PyLong_AsLong(py_k1);
+                } else if (PyFloat_Check(py_k1)) {
+                    k1 = PyFloat_AsDouble(py_k1);
+                } else {
+                    PyErr_SetString(PyExc_TypeError, "Must pass in float for k1.");
+                    return NULL;
+                }
+                if (PyLong_Check(py_k2)) {
+                    k2 = (double) PyLong_AsLong(py_k2);
+                } else if (PyFloat_Check(py_k2)) {
+                    k2 = PyFloat_AsDouble(py_k2);
+                } else {
+                    PyErr_SetString(PyExc_TypeError, "Must pass in float for k2.");
+                    return NULL;
+                }
+                if (PyLong_Check(py_k3)) {
+                    k3 = (double) PyLong_AsLong(py_k3);
+                } else if (PyFloat_Check(py_k3)) {
+                    k3 = PyFloat_AsDouble(py_k3);
+                } else {
+                    PyErr_SetString(PyExc_TypeError, "Must pass in float for k3.");
+                    return NULL;
+                }
+                if (PyLong_Check(py_k4)) {
+                    k4 = (double) PyLong_AsLong(py_k4);
+                } else if (PyFloat_Check(py_k4)) {
+                    k4 = PyFloat_AsDouble(py_k4);
+                } else {
+                    PyErr_SetString(PyExc_TypeError, "Must pass in float for k4.");
+                    return NULL;
+                }
+
+                graph->set_features(names);
+
+                partition = new HybridVertexPartition(graph, dataset, target, k1, k2, k3, k4);
+            } else {
+                partition = new HybridVertexPartition(graph);
+            }
+        }
+
+        // Do *NOT* forget to remove the graph upon deletion
+        partition->destructor_delete_graph = true;
+
+        PyObject* py_partition = capsule_MutableVertexPartition(partition);
+#ifdef DEBUG
+        cerr << "Created capsule partition at address " << py_partition << endl;
+#endif
+
+        return py_partition;
+    }
+    catch (std::exception& e )
+    {
+        string s = "Could not construct partition: " + string(e.what());
+        PyErr_SetString(PyExc_BaseException, s.c_str());
+        return NULL;
+    }
+}
   PyObject* _new_ModularityVertexPartition(PyObject *self, PyObject *args, PyObject *keywds)
   {
     PyObject* py_obj_graph = NULL;

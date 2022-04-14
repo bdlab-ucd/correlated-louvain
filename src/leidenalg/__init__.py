@@ -47,6 +47,7 @@ from .functions import slices_to_layers
 from .functions import time_slices_to_layers
 
 from .Optimiser import Optimiser
+from .VertexPartition import HybridVertexParition
 from .VertexPartition import ModularityVertexPartition
 from .VertexPartition import SurpriseVertexPartition
 from .VertexPartition import SignificanceVertexPartition

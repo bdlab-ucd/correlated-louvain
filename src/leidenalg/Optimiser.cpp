@@ -32,6 +32,8 @@ Optimiser::Optimiser()
 
   igraph_rng_init(&rng, &igraph_rngtype_mt19937);
   igraph_rng_seed(&rng, time(NULL));
+
+  igraph_set_attribute_table(&igraph_cattribute_table);
 }
 
 Optimiser::~Optimiser()

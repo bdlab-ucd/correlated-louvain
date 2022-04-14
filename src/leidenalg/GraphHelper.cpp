@@ -764,6 +764,20 @@ Graph* Graph::collapse_graph(MutableVertexPartition* partition)
     csizes[c] = partition->csize(c);
 
   Graph* G = new Graph(graph, collapsed_weights, csizes, this->_correct_self_loops);
+
+  std::vector< std::vector<int> > current_names = this->get_features();
+  std::vector< std::vector<int> > new_names;
+
+  for (std::vector<size_t> comm : community_memberships) {
+      std::vector<int> cluster_members;
+      for (size_t i : comm) {
+          for (int member : current_names[i])
+            cluster_members.push_back(member);
+      }
+      new_names.push_back(cluster_members);
+  }
+  G->set_features(new_names);
+
   G->_remove_graph = true;
   #ifdef DEBUG
     cerr << "exit Graph::collapse_graph(vector<size_t> membership)" << endl << endl;

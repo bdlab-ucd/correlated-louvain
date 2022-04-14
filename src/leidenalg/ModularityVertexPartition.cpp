@@ -132,7 +132,7 @@ double ModularityVertexPartition::quality()
     cerr << "double ModularityVertexPartition::quality()" << endl;
   #endif
   double mod = 0.0;
-
+printf("Test Modularity Quality");
   double m;
   if (this->graph->is_directed())
     m = this->graph->total_weight();
