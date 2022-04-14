@@ -1,4 +1,23 @@
-leidenalg
+Correlatd Louvain
+==============
+
+This is a fork ok `vtraag/leidenalg <https://github.com/vtraag/leidenalg>`_ with additional functionality to handle a hybrid objective function combining Modularity and Pearson Correlation to a target variable. To access this objective function, use the "HybridVertexPartiton" class. 
+
+Sample usage:
+
+>>> import leidenalg as leiden
+>>> import igraph as ig
+
+>>> G = 
+
+>>> partial_partition = leiden.HybridVertexParition(G, weights='weight', dataset=dataset, target=target, k3=k3, k4=k4)
+>>> partition_agg = partial_partition.aggregate_partition()
+>>> while optimiser.move_nodes(partition_agg) > 0:
+>>>     partial_partition.from_coarse_partition(partition_agg)
+>>>     partition_agg = partition_agg.aggregate_partition()
+
+==============
+Original ReadMe
 ==============
 
 This package implements the Leiden algorithm in ``C++`` and exposes it to
